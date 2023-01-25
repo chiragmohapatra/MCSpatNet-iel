@@ -17,23 +17,27 @@ from my_dataloader_w_kfunc import CellsDataset
 from my_dataloader import CellsDataset as CellsDataset_simple
 from cluster_helper import *
 
-checkpoints_root_dir = '../MCSpatNet_checkpoints' # The root directory for all training output.
-checkpoints_folder_name = 'mcspatnet_consep_1' # The name of the folder that will be created under <checkpoints_root_dir> to hold output from current training instance.
+parser = argparse.ArgumentParser()
+parser.add_argument("--data", type=str, default=".", help="location of the data corpus")
+parser.add_argument("--epochs", type=int, default=300, help="epochs")
+parser.add_argument("--model_path", type=str, default=None, help="path of prev checkpoint")
+parser.add_argument("--name", type=str, default="mcspatnet_iel", help="name of checkpoint folder")
+
+args = parser.parse_args()
+checkpoints_root_dir = './train_output' # The root directory for all training output.
+checkpoints_folder_name = args.name # The name of the folder that will be created under <checkpoints_root_dir> to hold output from current training instance.
 model_param_path        = None;  # path of a previous checkpoint to continue training
-clustering_pseudo_gt_root = '../MCSpatNet_epoch_subclasses'
-train_data_root = '../MCSpatNet_datasets/CoNSeP_train'
-test_data_root = '../MCSpatNet_datasets/CoNSeP_train'
-train_split_filepath = './data_splits/consep/train_split.txt'
-test_split_filepath = './data_splits/consep/val_split.txt'
-epochs  = 300 # number of training epochs. Use 300 for CoNSeP dataset.
+clustering_pseudo_gt_root = './MCSpatNet_epoch_subclasses'
+train_data_root = os.path.join(args.data,'train')
+test_data_root = os.path.join(args.data,'val')
+train_split_filepath = None
+test_split_filepath = None
+epochs  = args.epochs # number of training epochs. Use 300 for CoNSeP dataset.
 
 
-cell_code = {1:'lymphocyte', 2:'tumor', 3:'stromal'}
+cell_code = {1:'epith', 2:'iel'}
 
 feature_code = {'decoder':0, 'cell-detect':1, 'class':2, 'subclass':3, 'k-cell':4}
-
-
-
 
 if __name__=="__main__":
 
@@ -98,9 +102,9 @@ if __name__=="__main__":
     conv_init = 'he'
 
     n_channels = 3
-    n_classes = 3 # number of cell classes (lymphocytes, tumor, stromal)
+    n_classes = 2 # number of cell classes (lymphocytes, tumor, stromal)
     n_classes_out = n_classes + 1 # number of output classes = number of cell classes (lymphocytes, tumor, stromal) + 1 (for cell detection channel)
-    class_indx = '1,2,3' # the index of the classes channels in the ground truth
+    class_indx = '1,2' # the index of the classes channels in the ground truth
     n_clusters = 5 # number of clusters per class
     n_classes2 = n_clusters * (n_classes) # number of output classes for the cell cluster classification
 
