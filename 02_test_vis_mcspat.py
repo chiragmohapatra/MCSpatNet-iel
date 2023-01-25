@@ -23,7 +23,7 @@ parser.add_argument("--name", type=str, default="mcspatnet_iel", help="name of c
 args = parser.parse_args()
 checkpoints_root_dir = './train_output' # The root directory for all training output.
 checkpoints_folder_name = args.name # The name of the current training output folder under <checkpoints_root_dir>.
-eval_root_dir = os.path.join(args.data,'val')
+eval_root_dir = './eval_output'
 epoch=args.epochs # the epoch to test
 visualize=True # whether to output a visualization of the prediction
 test_data_root = os.path.join(args.data,'test')
