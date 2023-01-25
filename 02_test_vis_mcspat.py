@@ -13,12 +13,19 @@ import glob
 from model_arch import UnetVggMultihead
 from my_dataloader import CellsDataset
 
-checkpoints_root_dir = '../MCSpatNet_checkpoints' # The root directory for all training output.
-checkpoints_folder_name = 'mcspatnet_consep_1' # The name of the current training output folder under <checkpoints_root_dir>.
-eval_root_dir = '../MCSpatNet_eval'
-epoch=100 # the epoch to test
+parser = argparse.ArgumentParser()
+parser.add_argument("--data", type=str, default=".", help="location of the data corpus")
+parser.add_argument("--epochs", type=int, default=100, help="epochs")
+parser.add_argument("--model_path", type=str, default=None, help="path of prev checkpoint")
+parser.add_argument("--name", type=str, default="mcspatnet_iel", help="name of checkpoint folder")
+
+args = parser.parse_args()
+checkpoints_root_dir = './train_output' # The root directory for all training output.
+checkpoints_folder_name = args.name # The name of the current training output folder under <checkpoints_root_dir>.
+eval_root_dir = os.path.join(args.data,'val')
+epoch=args.epochs # the epoch to test
 visualize=True # whether to output a visualization of the prediction
-test_data_root = '../MCSpatNet_datasets/CoNSeP_test'
+test_data_root = os.path.join(args.data,'test')
 test_split_filepath = None
 
 if __name__=="__main__":
@@ -52,9 +59,9 @@ if __name__=="__main__":
     initial_pad = 126
     interpolate = 'False'
     conv_init = 'he'
-    n_classes = 3
+    n_classes = 2
     n_classes_out = n_classes + 1
-    class_indx = '1,2,3'
+    class_indx = '1,2'
     class_weights = np.array([1,1,1]) 
     n_clusters = 5
     n_classes2 = n_clusters * (n_classes)
