@@ -6,10 +6,15 @@ import scipy.spatial
 from skimage import io;
 from scipy.ndimage.filters import convolve   
 from scipy import ndimage
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--name", type=str, default="mcspatnet_iel_e100", help="name of checkpoint folder")
+args = parser.parse_args()
 
 # Configuration parameters
 # data_dir contains ground truth and prediction, assumes test_vis_mcspat.py was run first
-data_dir = '../MCSpatNet_eval/mcspatnet_iel_e100'
+data_dir = os.path.join('../MCSpatNet_eval',args.name)
 
 max_dist_thresh = 6 # will compute fscore at distance thresholds in range (1,max_dist_thresh) # mpp = 0.254 at 40x,  ppm at 20x = 1/(0.254*2),  mpp at 20x = 0.254*2 = 0.508, 6 px = 0.508*6 = 3.048 microns, , 30 px = 0.508*30=15.24 microns
 color_set = {'tp':(0,162,232),'fp':(0,255,0),'fn':(255,255,0)} 
