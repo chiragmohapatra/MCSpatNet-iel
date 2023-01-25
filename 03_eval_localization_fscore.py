@@ -10,6 +10,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--name", type=str, default="mcspatnet_iel_e100", help="name of checkpoint folder")
+parser.add_argument("--n_classes", type=int, default=2, help="num classes")
 args = parser.parse_args()
 
 # Configuration parameters
@@ -177,7 +178,7 @@ def eval(data_dir, out_dir):
 
 if __name__ == "__main__":
     out_dir= data_dir # can change the output directory
-    n_classes=2 # number of cell classes
+    n_classes=args.n_classes # number of cell classes
     n_classes_out = n_classes + 1 # output includes cell classes and cells detection
 
     # Initialize statistics variables
