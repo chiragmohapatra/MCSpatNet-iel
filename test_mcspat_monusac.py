@@ -213,7 +213,10 @@ if __name__=="__main__":
                 for idx in range(len(gt_centers[0])):
                     cx = gt_centers[1][idx]
                     cy = gt_centers[0][idx]
-                    img_centers_all_gt[cy-3:cy+3, cx-3:cx+3,:] = color_set[s]
+                    try:
+                        img_centers_all_gt[cy-3:cy+3, cx-3:cx+3,:] = color_set[s]
+                    except:
+                        continue
 
                 e_dot.astype(np.uint8).dump(os.path.join(out_dir, img_name.replace('.png', '_centers' + '_s' + str(s) + '.npy')))
                 #if(visualize):
