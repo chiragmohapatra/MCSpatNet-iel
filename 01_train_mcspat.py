@@ -145,7 +145,7 @@ if __name__=="__main__":
     optimizer=torch.optim.Adam(list(model.final_layers_lst.parameters())+list(model.decoder.parameters())+list(model.bottleneck.parameters())+list(model.encoder.parameters()),lr)
 
     # Initialize training dataset loader
-    train_dataset=CellsDataset(train_image_root,train_dmap_root,train_dots_root,class_indx,train_dmap_subclasses_root, train_dots_subclasses_root, train_kmap_root, split_filepath=train_split_filepath, phase='train', fixed_size=448, max_scale=16)
+    train_dataset=CellsDataset(train_image_root,train_dmap_root,train_dots_root,class_indx,train_dmap_subclasses_root, train_dots_subclasses_root, train_kmap_root, split_filepath=train_split_filepath, phase='train', fixed_size=640, max_scale=16)
     train_loader=torch.utils.data.DataLoader(train_dataset,batch_size=batch_size,shuffle=True)
 
     # Initialize validation dataset loader
