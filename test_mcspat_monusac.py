@@ -19,9 +19,10 @@ parser.add_argument("--data", type=str, default=".", help="location of the data 
 parser.add_argument("--epochs", type=int, default=100, help="epochs")
 parser.add_argument("--model_path", type=str, default=None, help="path of prev checkpoint")
 parser.add_argument("--name", type=str, default="mcspatnet_monusac", help="name of checkpoint folder")
+parser.add_argument("--root", type=str, default='./train_output', help="name of checkpoint folder")
 
 args = parser.parse_args()
-checkpoints_root_dir = './train_output' # The root directory for all training output.
+checkpoints_root_dir = args.root # The root directory for all training output.
 checkpoints_folder_name = args.name # The name of the current training output folder under <checkpoints_root_dir>.
 eval_root_dir = './eval_output'
 epoch=args.epochs # the epoch to test
@@ -39,7 +40,7 @@ if __name__=="__main__":
     color_set = {0:(0,162,232),1:(255,0,0),2:(0,255,0)} 
 
     # model checkpoint and output configuration parameters
-    models_root_dir = os.path.join(checkpoints_root_dir, checkpoints_folder_name)
+    models_root_dir = checkpoint_root_dir
     out_dir = os.path.join(eval_root_dir, checkpoints_folder_name+f'_e{epoch}') 
 
     if(not os.path.exists(eval_root_dir)):
