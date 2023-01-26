@@ -40,7 +40,7 @@ if __name__=="__main__":
     color_set = {0:(0,162,232),1:(255,0,0),2:(0,255,0)} 
 
     # model checkpoint and output configuration parameters
-    models_root_dir = checkpoint_root_dir
+    models_root_dir = checkpoints_root_dir
     out_dir = os.path.join(eval_root_dir, checkpoints_folder_name+f'_e{epoch}') 
 
     if(not os.path.exists(eval_root_dir)):
