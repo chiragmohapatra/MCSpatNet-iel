@@ -12,6 +12,7 @@ from skimage import filters
 from skimage.measure import label, moments
 import glob
 import argparse
+import torchvision.transforms
 
 from model_arch import UnetVggMultihead
 from my_dataloader_w_kfunc import CellsDataset
@@ -23,6 +24,7 @@ parser.add_argument("--data", type=str, default=".", help="location of the data 
 parser.add_argument("--epochs", type=int, default=300, help="epochs")
 parser.add_argument("--model_path", type=str, default=None, help="path of prev checkpoint")
 parser.add_argument("--name", type=str, default="mcspatnet_iel", help="name of checkpoint folder")
+parser.add_argument('--postreg', action='store_true', help='add posterior regularisation')
 
 args = parser.parse_args()
 checkpoints_root_dir = './train_output' # The root directory for all training output.
@@ -260,16 +262,65 @@ if __name__=="__main__":
                 # train_count_k += 1
                 # train_loss_k += loss_l1_k.item()
 
+            if args.postreg:
+                # Apply Sigmoid and Softmax activations to the detection and classification predictions, respectively.
+                et_all_sig = criterion_sig(et_dmap_all).detach().cpu().numpy()
+                et_class_sig = criterion_softmax(et_dmap_class).detach().cpu().numpy()
+
+                e_hard = filters.apply_hysteresis_threshold(et_all_sig.squeeze(), 0.5, 0.5)            
+                e_hard2 = (e_hard > 0).astype(np.uint8)
+                e_hard2_all = e_hard2.copy() 
+
+                # Get predicted cell centers by finding center of contours in binary mask
+                e_dot = np.zeros((img.shape[-2], img.shape[-1]))
+                contours, hierarchy = cv2.findContours(e_hard2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+                for idx in range(len(contours)):
+                    contour_i = contours[idx]
+                    M = cv2.moments(contour_i)
+                    if(M['m00'] == 0):
+                        continue;
+                    cx = round(M['m10'] / M['m00'])
+                    cy = round(M['m01'] / M['m00'])
+                    e_dot[cy, cx] = 1
+                e_dot_all = e_dot.copy()
+                et_class_argmax = et_class_sig.squeeze().argmax(axis=0)
+                e_hard2_all = e_hard2.copy()
+                
+                train_intensity = [0 for _ in range(n_classes)]
+                pred_intensity = [0 for _ in range(n_classes)]
+
+                for s in range(n_classes):
+                    g_count = gt_dots[0,s,:,:].sum()
+                    e_hard2 = (et_class_argmax == s)  
+                    e_dot = e_hard2 * e_dot_all  
+                    g_dot = gt_dots[0,s,:,:].squeeze().numpy()
+
+                    img2 = torchvision.transforms.ToPILImage()(img[0])
+                    img2 = cv2.cvtColor(np.array(img2), cv2.COLOR_RGB2BGR)
+                    img2 = cv2.cvtColor(img2,cv2.COLOR_BGR2HSV)
+
+                    train_intensity[s] += (img2[:,:,2]*g_dot).sum()
+                    train_intensity[s] /= g_dot.sum()
+
+                    pred_intensity[s] += (img2[:,:,2]*e_dot).sum()
+                    pred_intensity[s] /= e_dot.sum()
+
+                lreg = 0
+                for i1 in range(n_classes):
+                    for i2 in range(i1+1,n_classes):
+                        lreg += abs((train_intensity[i1] - train_intensity[i2]) - (pred_intensity[i1] - pred_intensity[i2]))
+
+                print('Regularisation Loss :' , lreg, 'Normal Loss :' , loss)
+                loss += (lreg * 0.01)
+
             # Backpropagate loss
             epoch_loss += loss.item()
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
-
             log_file.write("epoch: "+str(epoch)+ "  i: "+str(i)+"   loss_dice: "+str(loss_dice.item()) + "   loss_l1_k:" + str(loss_l1_k.item()) + '\n')
             log_file.flush()
-
 
         log_file.write("epoch: " + str(epoch) + " train loss: "+ str(epoch_loss/train_count)+ '\n')
         log_file.flush()
